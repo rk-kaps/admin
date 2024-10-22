@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<h1>ADMIN</h1>
+    <form>
+        <!-- Class Dropdown -->
+        <label for="class">Class:</label>
+        <select id="class" name="class" onchange="updateEvents()">
+            <option value="Kg">Kg</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+        </select>
+
+        <!-- Event Dropdown -->
+        <label for="event">Event</label>
+        <select id="event" name="event" onchange="updateParticipantsAndHouses()">
+            <!-- Events will be populated dynamically -->
+        </select>
+
+        <!-- House Dropdown -->
+        <label for="House">House</label>
+        <select id="House" name="house">
+            <!-- Houses will be populated dynamically -->
+        </select>
+
+        <!-- Participants Dropdown -->
+        <label for="participants">Participants</label>
+        <select id="participants" name="participants">
+            <!-- Participants will be populated dynamically -->
+        </select>
+
+        <br><br>
+        <input type="submit" value="Submit">
+    </form>
+    <script type="module" src="admin.js"></script>
+</body>
+
+</html>
