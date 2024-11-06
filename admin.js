@@ -1,4 +1,3 @@
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import { getDatabase, ref, get, child, update} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
 
@@ -20,8 +19,10 @@ console.log("initialized firebase");
 
 
 function updateEvents() {
-    const classSelect = document.getElementById('class');
-    const selectedClass = classSelect.value;
+    
+    const selectedClass = document.getElementById('class').value;
+    const selectedCategory  = document.getElementById('category').value;
+
     const eventSelect = document.getElementById('event');
 
    
@@ -30,7 +31,9 @@ function updateEvents() {
    
     const dbRef = ref(database);
     console.log("selected class");
-    get(child(dbRef, 'Classes/' + selectedClass + '/EVENTS')).then((snapshot) => {
+    get(child(dbRef, Classes/${selectedClass}/CATEGORY/${selectedCategory}/EVENTS/)).then((snapshot) => {
+        console.log(snapshot.exists());
+        console.log(snapshot);
         if (snapshot.exists()) {
             const events = snapshot.val();
             Object.keys(events).forEach(event => {
@@ -49,56 +52,46 @@ function updateEvents() {
         console.error('Error fetching events:', error);
     });
 }
-function updateParticipantsAndHouses() {
+function updateParticipantsAndHouses(pos) {
     const classSelect = document.getElementById('class');
     const selectedClass = classSelect.value;
     const eventSelect = document.getElementById('event');
     const selectedEvent = eventSelect.value;
+    const selectedCategory =  document.getElementById('category').value;
+    //console.log('house'+pos);
+    const selectedHouse =  document.getElementById('House'+pos).value;
 
-    const participantsSelect = document.getElementById('participants');
-    const participantsSelect2 = document.getElementById('participants2');
-    const participantsSelect3 = document.getElementById('participants3');
+    const participantsSelect = document.getElementById('participants'+pos);
+
     
     participantsSelect.innerHTML = '';
-    participantsSelect2.innerHTML = '';
-    participantsSelect3.innerHTML = '';
     
 
     const dbRef = ref(database);
 
-   
-    get(child(dbRef, 'Classes/' + selectedClass + '/EVENTS/' + selectedEvent)).then((snapshot) => {
-        const eventData = snapshot.val();
-
-        if (eventData) {
-            const participants = eventData.PARTICIPANTS || [];
+    console.log(selectedHouse);
+        get(child(dbRef, Classes/${selectedClass}/CATEGORY/${selectedCategory}/EVENTS/${selectedEvent}/HOUSE/${selectedHouse})).then((snapshot) => {
             
+            console.log(snapshot.val);
+            if (snapshot.exists()) {
+                const participants = snapshot.val();
+                Object.keys(participants).forEach(participant => {
+                    console.log(participant);
+                    const option = document.createElement('option');
+                    option.value = participant;
+                    option.textContent = participant;
+                    participantsSelect.appendChild(option);
+                });
+            } else {
+                const noParticipantsOption = document.createElement('option');
+                noParticipantsOption.value = '';
+                noParticipantsOption.textContent = 'No participants available';
+                participantsSelect.appendChild(noParticipantsOption);
+            }
 
-            participants.forEach(participant => {
-                const option1 = document.createElement('option');
-                const option2 = document.createElement('option');
-                const option3 = document.createElement('option');
-
-                option1.value = option2.value = option3.value = participant;
-                option1.textContent = option2.textContent = option3.textContent = participant;
-
-                participantsSelect.appendChild(option1);
-                participantsSelect2.appendChild(option2);
-                participantsSelect3.appendChild(option3);
-            });
-            
-        } else {
-            const noParticipantsOption = document.createElement('option');
-            noParticipantsOption.value = '';
-            noParticipantsOption.textContent = 'No participants available';
-            participantsSelect.appendChild(noParticipantsOption);
-            participantsSelect2.appendChild(noParticipantsOption);
-            participantsSelect3.appendChild(noParticipantsOption);
-        }
-
-    }).catch((error) => {
-        console.error('Error fetching participants:', error);
-    });
+        }).catch((error) => {
+            console.error('Error fetching participants:', error);
+        });
 }
 
 
@@ -106,8 +99,8 @@ function handleSubmit(event){
     event.preventDefault();
     
     
-    const participantsSelect = document.getElementById("participants");
-    const houseSelect = document.getElementById("House");
+    const participantsSelect = document.getElementById("participants1");
+    const houseSelect = document.getElementById("House1");
     const participantsSelect2 = document.getElementById("participants2");
     const houseSelect2 = document.getElementById("House2");
     const participantsSelect3 = document.getElementById("participants3");
@@ -137,12 +130,19 @@ function handleSubmit(event){
 }
 
 const updatePoints = async (participantId, houseId, pointsToAdd) => {
-    const participantRef = ref(database, `ParticipantList/${participantId}`);
-    const houseRef = ref(database, `HouseList/${houseId}`);
+    const participantRef = ref(database, ParticipantList/${participantId});
+    const houseRef = ref(database, HouseList/${houseId});
+    const selectedCategory = document.getElementById('category').value;
+    const selectedClass = document.getElementById('class').value;
+    const selectedEvent = document.getElementById('event').value;
+    const reff = ref(database, Classes/${selectedClass}/CATEGORY/${selectedCategory}/EVENTS/${selectedEvent}/HOUSE/${houseId}/${participantId});
     const participantSnapshot = await get(participantRef);
     const houseSnapshot = await get(houseRef);
+    const dbSnapshot = await get(reff);
 
-    if (participantSnapshot.exists() && houseSnapshot.exists()) {
+    if (participantSnapshot.exists() && houseSnapshot.exists() && dbSnapshot.exists()) {
+        const currentEventParticipantPoints = dbSnapshot.val();
+        const newEventParticipantPoints = currentEventParticipantPoints + pointsToAdd;
         const currentParticipantPoints = participantSnapshot.val();
         const newParticipantPoints = currentParticipantPoints + pointsToAdd;
 
@@ -150,10 +150,12 @@ const updatePoints = async (participantId, houseId, pointsToAdd) => {
         const newHousePoints = currentHousePoints + pointsToAdd;
 
         const updates = {};
-        updates[`ParticipantList/${participantId}`] = newParticipantPoints;
-        updates[`HouseList/${houseId}`] = newHousePoints;
+        updates[ParticipantList/${participantId}] = newParticipantPoints;
+        updates[HouseList/${houseId}] = newHousePoints;
+        updates[Classes/${selectedClass}/CATEGORY/${selectedCategory}/EVENTS/${selectedEvent}/HOUSE/${houseId}/${participantId}] = newEventParticipantPoints;
         await update(ref(database), updates);
-        console.log(`Updated ${participantId} to ${newParticipantPoints} points and ${houseId} to ${newHousePoints} points.`);
+        console.log(Updated ${participantId} to ${newParticipantPoints} points and ${houseId} to ${newHousePoints} points. and the other thing too.);
+        console.log();
     } else {
         console.log("No such participant or house!");
     }
