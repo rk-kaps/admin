@@ -31,7 +31,7 @@ function updateEvents() {
    
     const dbRef = ref(database);
     console.log("selected class");
-    get(child(dbRef, Classes/${selectedClass}/CATEGORY/${selectedCategory}/EVENTS/)).then((snapshot) => {
+    get(child(dbRef, `Classes/${selectedClass}/CATEGORY/${selectedCategory}/EVENTS/`)).then((snapshot) => {
         console.log(snapshot.exists());
         console.log(snapshot);
         if (snapshot.exists()) {
@@ -70,7 +70,7 @@ function updateParticipantsAndHouses(pos) {
     const dbRef = ref(database);
 
     console.log(selectedHouse);
-        get(child(dbRef, Classes/${selectedClass}/CATEGORY/${selectedCategory}/EVENTS/${selectedEvent}/HOUSE/${selectedHouse})).then((snapshot) => {
+        get(child(dbRef, `Classes/${selectedClass}/CATEGORY/${selectedCategory}/EVENTS/${selectedEvent}/HOUSE/${selectedHouse}`)).then((snapshot) => {
             
             console.log(snapshot.val);
             if (snapshot.exists()) {
@@ -130,12 +130,12 @@ function handleSubmit(event){
 }
 
 const updatePoints = async (participantId, houseId, pointsToAdd) => {
-    const participantRef = ref(database, ParticipantList/${participantId});
-    const houseRef = ref(database, HouseList/${houseId});
+    const participantRef = ref(database, `ParticipantList/${participantId}`);
+    const houseRef = ref(database, `HouseList/${houseId}`);
     const selectedCategory = document.getElementById('category').value;
     const selectedClass = document.getElementById('class').value;
     const selectedEvent = document.getElementById('event').value;
-    const reff = ref(database, Classes/${selectedClass}/CATEGORY/${selectedCategory}/EVENTS/${selectedEvent}/HOUSE/${houseId}/${participantId});
+    const reff = ref(database, `Classes/${selectedClass}/CATEGORY/${selectedCategory}/EVENTS/${selectedEvent}/HOUSE/${houseId}/${participantId}`);
     const participantSnapshot = await get(participantRef);
     const houseSnapshot = await get(houseRef);
     const dbSnapshot = await get(reff);
@@ -150,11 +150,11 @@ const updatePoints = async (participantId, houseId, pointsToAdd) => {
         const newHousePoints = currentHousePoints + pointsToAdd;
 
         const updates = {};
-        updates[ParticipantList/${participantId}] = newParticipantPoints;
-        updates[HouseList/${houseId}] = newHousePoints;
-        updates[Classes/${selectedClass}/CATEGORY/${selectedCategory}/EVENTS/${selectedEvent}/HOUSE/${houseId}/${participantId}] = newEventParticipantPoints;
+        updates[`ParticipantList/${participantId}`] = newParticipantPoints;
+        updates[`HouseList/${houseId}`] = newHousePoints;
+        updates[`Classes/${selectedClass}/CATEGORY/${selectedCategory}/EVENTS/${selectedEvent}/HOUSE/${houseId}/${participantId}`] = newEventParticipantPoints;
         await update(ref(database), updates);
-        console.log(Updated ${participantId} to ${newParticipantPoints} points and ${houseId} to ${newHousePoints} points. and the other thing too.);
+        console.log(`Updated ${participantId} to ${newParticipantPoints} points and ${houseId} to ${newHousePoints} points. and the other thing too.`);
         console.log();
     } else {
         console.log("No such participant or house!");
